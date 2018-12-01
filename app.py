@@ -1,12 +1,20 @@
-from flask import Flask, render_template, jsonify
-from flask import request
+import os
+from flask import Flask, render_template, jsonify, request, flash, redirect, url_for
 import tensorflow as tf
 import numpy as np
+from werkzeug.utils import secure_filename
 from keras.models import load_model
 from keras.preprocessing import image
 
+UPLOAD_FOLDER = 'C:/Users/bunny/Desktop/qhacks/Local-Hack-Day/user images'
+ALLOWED_EXTENSIONS = set([ 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # dimensions of our images
 img_width, img_height = 224, 224
@@ -26,6 +34,20 @@ img_tensor = np.expand_dims(img_tensor, axis=0)
 def home():
     return render_template('index.html')
 
+@app.route('/indexImages', methods = ['GET', 'POST'])
+def uploader():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return render_template('indexImages.html')
+        elif (allowed_file(file.filename)) == False:
+            return redirect('indexInvalidImages')
+
+@app.route('/indexInvalidImages')
+def invalid_image():
+    return render_template('indexInvalidImages.html')
 
 @app.route("/classify", methods=['POST'])	
 def classify():
