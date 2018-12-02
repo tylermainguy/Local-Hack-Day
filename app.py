@@ -18,7 +18,7 @@ def allowed_file(filename):
 
 # dimensions of our images
 img_width, img_height = 224, 224
-model = load_model('MobileNetV2.h5')
+model = load_model('lhd.h5')
 global graph
 graph = tf.get_default_graph() 
 
